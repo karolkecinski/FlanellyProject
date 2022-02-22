@@ -56,8 +56,12 @@ pub fn parse(s: &str) -> Result<Prog, String> {
 /// mul       ::= aexp_atom * ... * aexp_atom
 /// aexp_atom ::= n | x | `(` aexp `)`
 ///
-/// bexp      ::= lesseq
+/// bexp      ::= or | neg
 /// lesseq    ::= aexp `<=` aexp
+/// or        ::= and `||` ... `||` and
+/// and       ::= bexp_atom `&&` ... `&&` bexp_atom
+/// neg       ::= `!`bexp
+/// bexp_atom ::= lesseq | `(` bexp `)`
 ///
 /// with $n \in \mathbb{N}$ and $x \in \mathit{Var}$
 /// ```
@@ -80,7 +84,7 @@ fn aexp(s: &str) -> IResult<&str, AExp> {
 
 /// A boolean expression is a less-eq comparison.
 fn bexp(s: &str) -> IResult<&str, BExp> {
-    lesseq(s)
+    alt((lesseq, and, or, neg))(s)
 }
 
 //////////
@@ -176,6 +180,38 @@ fn lesseq(s: &str) -> IResult<&str, BExp> {
     let (s, _) =  bin_op("<=", s)?;
     let (s, right) = aexp(s)?;
     Ok((s, LessEq(Box::new(left), Box::new(right))))
+}
+
+fn and(s: &str) -> IResult<&str, BExp> {
+    let (s, factors) = separated_nonempty_list(|s2| bin_op("&&", s2), bexp_atom)(s)?;
+    let mut iter = factors.into_iter();
+    let hd = iter.next().unwrap();
+    let res = iter.fold(hd, |acc: BExp, x: BExp| -> BExp {And(Box::new(acc), Box::new(x))});
+    Ok((s, res))
+}
+
+fn or(s: &str) -> IResult<&str, BExp> {
+    let(s, summands) = separated_nonempty_list(|s2| bin_op("||", s2), and)(s)?;
+    let mut iter = summands.into_iter();
+    let hd = iter.next().unwrap();
+    let res = iter.fold(hd, |acc: BExp, x: BExp| -> BExp {Or(Box::new(acc), Box::new(x))});
+    Ok((s, res))
+}
+
+fn neg(s: &str) -> IResult<&str, BExp> {
+    let (s, _) = tag("!")(s)?;
+    let(s, exp) = bexp(s)?;
+    Ok((s, Neg(Box::new(exp))))
+}
+
+fn bexp_atom(s: &str) -> IResult<&str, BExp> {
+    alt((lesseq, bexp_parens))(s)
+}
+
+fn bexp_parens(s: &str) -> IResult<&str, BExp> {
+    delimited(pair(tag("("), multispace0),
+            bexp,
+            pair(multispace0, tag(")")))(s)
 }
 
 //////////////

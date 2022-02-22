@@ -15,7 +15,21 @@ pub enum AExp {
 impl AExp {
     /// Return `true` if there exists a variable somewhere in the arithmetic expression
     pub fn contains_var(&self, x: &VarName) -> bool {
-        todo!()
+        match self
+        {
+            AExp::Num(_) => false,
+            AExp::Var(v) => *x == *v,
+            AExp::Add(l, r) => {
+                l.contains_var(x)
+                ||
+                r.contains_var(x)
+            }
+            AExp::Mul(l, r) => {
+                l.contains_var(x)
+                ||
+                r.contains_var(x)
+            }
+        }
     }
 
     pub fn sub_aexps(&self) -> HashSet<AExp> {

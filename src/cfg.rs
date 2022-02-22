@@ -183,7 +183,16 @@ impl<A> Cfg<A> {
     /// Map a Cfg<A> to a Cfg<B> by mapping the node annotations according to `f`
     pub fn map<B, F>(self: &Cfg<A>, f: F) -> Cfg<B>
     where F: Fn(&A) -> B {
-        todo!()
+        return Cfg {
+            graph: self.graph.map(
+                |_ : NodeIndex, n: &AnnotNode<A>|
+                AnnotNode::new(n.node.clone(),
+                                f(&n.annot)),
+                |_: EdgeIndex, e: &Edge|
+                e.clone()
+            ),
+            init: self.init
+        }
     }
 
     /// Return the predecessor nodes of a given node. If there are no predecessors (only possible for the initial node), then return `None`.

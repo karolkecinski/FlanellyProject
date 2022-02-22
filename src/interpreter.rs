@@ -12,13 +12,17 @@ impl MemConfig {
     /// Read operation (with `0` as default value)
     pub fn lookup(&self, x: &VarName) -> i32 {
         let MemConfig(map) = self;
-        todo!()
+        match map.get(&x)
+        {
+            Some(v) => { *v }
+            None => { 0 }
+        }
     }
 
     /// Write operation
     pub fn assign(&mut self, x: &VarName, n: i32) {
         let MemConfig(map) = self;
-        todo!()
+        map.insert(x.clone(), n);
     }
 }
 
@@ -49,10 +53,20 @@ pub fn eval_prog_atom(p: &ProgAtom, mut mem: MemConfig) -> MemConfig {
             mem
         }
         Cond(b, p1, p2) => {
-            todo!()
+            if eval_bexp(b, &mem)
+            {
+                eval_prog(p1, mem)
+            } else {
+                eval_prog(p2, mem)
+            }
         }
         While(b, p) => {
-            todo!()
+            let mut memclone = mem;
+
+            while eval_bexp(b, &memclone) {
+                memclone = eval_prog(p, memclone)
+            }
+            return memclone; 
         }
     }
 }
@@ -69,5 +83,18 @@ pub fn eval_aexp(a: &AExp, mem: &MemConfig) -> i32 {
 
 /// Evaluate boolean expression on given memory configuration. This function always returns.
 pub fn eval_bexp(a: &BExp, mem: &MemConfig) -> bool {
-    todo!();
+    match a {
+        LessEq(l, r) => {
+            eval_aexp(l, mem) <= eval_aexp(r, mem)
+        }
+        Conj(l, r) => {
+            eval_bexp(l, mem) && neval_bexp(r. mem)
+        }
+        Disj(l, r) => {
+            eval_bexp(l, mem) || neval_bexp(r. mem)
+        }
+        Neg(b) => {
+            !eval_bexp(b)
+        }
+    }
 }
