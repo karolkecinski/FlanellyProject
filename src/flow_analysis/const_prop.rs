@@ -21,10 +21,10 @@ impl SemiLat for ConstLat {
     fn join_bin(self: &Self, other: &Self) -> Self {
         match (self, other) {
             (Top, _) | (_, Top) => { Top }
-            (Bot, v) | (v, Bot) => { x.clone() }
+            (Bot, v) | (v, Bot) => { v.clone() }
             (v1, v2) => {
                 if v1.eq(v2) {
-                    x.clone()
+                    v1.clone()
                 } else {
                     Top
                 }
