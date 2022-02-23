@@ -27,23 +27,30 @@ pub fn mfp<L: SemiLat + FlowSemantics>(cfg_raw: &Cfg<RawAnnot>) -> Cfg<MfpAnnot<
     // The init node is not really part of the CFG (it does not have any predecessors but only serves as a predecessor itself)
     worklist.remove(&cfg.init);
 
-    while todo!() {
+    while worklist.is_empty() == false {
         // Take a node out of worklist
-        let n = todo!();
+        let n = *worklist.iter().next().unwrap();
+
+        worklist.remove(&n);
 
         // Combine annotations of predecessors
         let predecs: Vec1<&L> = cfg.predecessors(n).unwrap().mapped(|n_pre| &cfg.graph[n_pre].annot.post);
-        cfg.graph[n].annot.pre = todo!();
+        cfg.graph[n].annot.pre = SemiLat::join(predecs);
 
         // Compute f(in_n)
-        let f_in_n = todo!();
+        let f_in_n = FlowSemantics::eval_transfer_function(&cfg.graph[n].node, 
+                                                           &cfg.graph[n].annot.pre);
 
         // If n is not stable...
-        if todo!() {
+        if !f_in_n.eq(&cfg.graph[n].annot.post) {
             // ...update and...
-            todo!();
+            cfg.graph[n].annot.post = f_in_n;
             // ...mark successors
-            todo!();
+            cfg.successors(n).iter().for_each(
+                |successor_node| {
+                worklist.insert(*successor_node);
+                }
+            );
         }
     }
 
