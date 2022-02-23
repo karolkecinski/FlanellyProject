@@ -133,10 +133,10 @@ impl FlowSemantics for MultiConstLat {
     fn eval_transfer_function(n: &Node, mem: &Self) -> Self {
         match n {
             // `Init`, `Terminal`, `Skip` and `Branch` have no interesting semantics: They leave the memory untouched.
-            Node::Init => {mem.clone()}
-            Node::Terminal => {mem.clone()}
-            Node::Skip => {mem.clone()}
-            Node::Branch(_) => {mem.clone()}
+            Node::Init => { mem.clone() }
+            Node::Terminal => { mem.clone() }
+            Node::Skip => { mem.clone() }
+            Node::Branch(_) => { mem.clone() } 
             // Update variable on `Assign`
             Node::Assign(v, a) => {
                 let a_value = mem.eval_aexp(a);
